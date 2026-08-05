@@ -1,6 +1,6 @@
-# Antigravity Agentic Triad Role Contracts & Dynamic Model Routing
+# Antigravity Agentic Triad Role Contracts
 
-Grounded in **MetaGPT (Hong et al., ICLR 2024)** role specialization, **Reflexion (Shinn et al., 2023)** memory isolation, and **Google Antigravity Dynamic Model Switching**:
+Grounded in **MetaGPT (Hong et al., ICLR 2024)** role specialization, **Reflexion (Shinn et al., 2023)** memory isolation, **FrugalGPT (Chen et al., 2023)** dynamic model cascades, and **SWE-agent (Yang et al., 2024)** ACI guardrails:
 
 ## 1. Routine Worker (Initial Attempt)
 - **Model Parameter**: `flash` (Gemini 3.6 Flash) via `invoke_subagent`.
@@ -17,6 +17,6 @@ Grounded in **MetaGPT (Hong et al., ICLR 2024)** role specialization, **Reflexio
 ## 4. Independent Reviewer (All Attempts)
 - **Model Parameter**: `pro` (Gemini Pro) in a **fresh subagent conversation ID**.
 - **Purpose**: Strict, unbiased verification. Checks:
-  1. File ownership bounds (`git diff` vs `Files/Ownership`).
+  1. File ownership bounds (`git diff` vs `Files/Ownership` - SWE-agent ACI guardrail).
   2. Verification command adequacy (flags trivial or ineffective assertions).
   3. Returns `ship`, `fix-first`, or `rethink`.

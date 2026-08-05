@@ -1,23 +1,24 @@
 ---
 name: antigravity-agentic-triad
-description: "Implements the research-backed Antigravity Agentic Triad orchestration workflow with Dynamic Model Switching (grounded in MetaGPT & Reflexion literature). Separates concerns into Architect (Primary Agent), Routine Worker (Flash Subagent), Complex Worker (Pro Subagent), Escalated Worker (Pro on retry), and Independent Reviewer (Fresh Pro Subagent) to eliminate self-validation loops."
+description: "Implements the research-backed Antigravity Agentic Triad orchestration workflow with Dynamic Model Switching (grounded in 20 arXiv papers including MetaGPT, Reflexion, FrugalGPT, LATS, SWE-agent, ReAct, and ToT). Separates concerns into Architect (Primary Agent), Routine Worker (Flash Subagent), Complex Worker (Pro Subagent), Escalated Worker (Pro on retry), and Independent Reviewer (Fresh Pro Subagent) to eliminate self-validation loops."
 ---
 
 # Antigravity Agentic Triad Workflow
 
-**Antigravity Agentic Triad** is a research-backed Agentic Skill designed for **Google Antigravity**, featuring **Dynamic Model Switching & Escalation** at runtime. Grounded in peer-reviewed literature (**MetaGPT**, Hong et al., ICLR 2024; **Reflexion**, Shinn et al., 2023).
+**Antigravity Agentic Triad** is a research-backed Agentic Skill designed for **Google Antigravity**, featuring **Dynamic Model Switching & Escalation** at runtime. Grounded in 20 peer-reviewed AI agent research papers (**MetaGPT**, **Reflexion**, **FrugalGPT**, **LATS**, **SWE-agent**, **ReAct**, **Tree of Thoughts**, **SWE-bench**, **RouteLLM**, etc.).
 
 As the primary agent, you act as the **Architect**. You do not write implementation code directly. Instead, you delegate work via structured Standard Operating Procedure (SOP) packets and mandate a fresh, independent review process.
 
-## Roles & Subagent Dynamic Model Mapping
+## 🔬 Grounding in Research Papers & Reddit Pain Points Solved
 
-| Role | Responsibility | Antigravity Model Parameter | Dynamic Escalation Trigger |
+| Reddit Developer Pain Point | AI Coding Flaw | Triad Solution | Scientific Grounding Paper |
 |---|---|---|---|
-| **Architect** | Primary session. Owns requirements, architecture, 5-part SOP task packets, and final acceptance. | Main Session | N/A |
-| **Routine Worker** | Fast execution of routine, well-defined, mechanical tasks. | `invoke_subagent` (`Model: flash`) | Attempt 1 |
-| **Complex Worker** | Deep reasoning for complex, multi-file, or security-sensitive tasks. | `invoke_subagent` (`Model: pro`) | Attempt 1 |
-| **Escalated Worker** | Re-executes failed tasks with enhanced reasoning capability. | `invoke_subagent` (`Model: pro`) | Attempt 2 (if `flash` receives `fix-first`) |
-| **Independent Reviewer** | Fresh subagent. Reviews diffs against declared file ownership and runs verification tests. | `invoke_subagent` (`Model: pro` in fresh subagent) | All Attempts |
+| **1. Silent Hallucinations & Stubs** | Writing empty `// TODO` blocks | Independent Test Adequacy Audit | **CRITIC** (*ICLR 2024*) & **Reflexion** (*2023*) |
+| **2. Out-of-Scope Code Pollution** | Modifying unrelated files | ACI Guardrails & `git diff` checking | **SWE-agent** (*NeurIPS 2024*) |
+| **3. Cascading Chat Hallucinations** | Chat dialogue causing logic drift | SOP 5-part task packet artifacts | **MetaGPT** (*ICLR 2024*) & **ChatDev** (*ACL 2024*) |
+| **4. Token & Cost Explosion** | Querying heavy models for simple edits | Dynamic Model Cascade (`flash` -> `pro`) | **FrugalGPT** (*Stanford 2023*) & **RouteLLM** (*LMSYS 2024*) |
+| **5. Infinite Retry Loops** | Repeatedly trying broken fixes | Episodic memory ($\Omega \le 3$) & MCTS pruning | **LATS** (*ICML 2024*) & **Self-Refine** (*NeurIPS 2023*) |
+| **6. Context Blindness** | Missing multi-file imports | Explicit public interface contracts | **RepoCoder** (*EMNLP 2023*) & **InterCode** (*NeurIPS 2023*) |
 
 ---
 
@@ -61,9 +62,9 @@ Provide the reviewer with:
 
 ## Subdocumentation & Technical References
 
+- **Scientific Foundation Synthesis**: `references/research-foundation.md`
 - **Dynamic Model Switching Mechanics**: `references/dynamic-model-switching.md`
-- **Scientific Foundation Paper Synthesis**: `references/research-foundation.md`
 - **Architect Guide**: `references/architect-guide.md`
 - **Role Contracts**: `references/role-contracts.md`
 - **Antigravity Specs**: `references/antigravity-specs.md`
-- **Scripts**: `scripts/model_switch_matrix.py`, `scripts/validate_skill.py`, `scripts/run_verification.py`
+- **Scripts**: `scripts/generate_diagram.py`, `scripts/model_switch_matrix.py`, `scripts/validate_skill.py`, `scripts/run_verification.py`
