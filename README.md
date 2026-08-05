@@ -19,20 +19,20 @@ Antigravity allows dynamic runtime selection of LLM model tiers via `invoke_suba
 
 ```mermaid
 flowchart TD
-    Architect[1. Architect Session\nMain Agent - Directs Flow] -->|Task Decomposition| Router{Dynamic Model Switcher}
+    Architect["1. Architect Session - Main Agent"] -->|"Task Decomposition"| Router{Dynamic Model Switcher}
     
-    Router -->|Routine Edits: Model: flash| RoutineWorker[2a. Routine Worker\nGemini 3.6 Flash]
-    Router -->|Complex Logic: Model: pro| ComplexWorker[2b. Complex Worker\nGemini Pro]
-    Router -->|Retry Escalation: Model: pro| EscalatedWorker[2c. Escalated Worker\nGemini Pro - Auto Escalated]
+    Router -->|"Routine Edits: Model flash"| RoutineWorker["2a. Routine Worker - Gemini Flash"]
+    Router -->|"Complex Logic: Model pro"| ComplexWorker["2b. Complex Worker - Gemini Pro"]
+    Router -->|"Retry Escalation: Model pro"| EscalatedWorker["2c. Escalated Worker - Gemini Pro"]
     
-    RoutineWorker -->|Implementation| Reviewer[3. Independent Reviewer\nModel: pro - Clean Context]
-    ComplexWorker -->|Implementation| Reviewer
-    EscalatedWorker -->|Implementation| Reviewer
+    RoutineWorker -->|"Implementation"| Reviewer["3. Independent Reviewer - Gemini Pro"]
+    ComplexWorker -->|"Implementation"| Reviewer
+    EscalatedWorker -->|"Implementation"| Reviewer
     
-    Reviewer -->|Audit Gate| Verdict{Verdict: ship / fix-first / rethink}
+    Reviewer -->|"Audit Gate"| Verdict{Verdict: ship / fix-first / rethink}
     
-    Verdict -->|fix-first (Attempt 1 Flash)| EscalatedWorker
-    Verdict -->|ship| Complete[4. Complete]
+    Verdict -->|"fix-first (Attempt 1 Flash)"| EscalatedWorker
+    Verdict -->|"ship"| Complete["4. Complete"]
 ```
 
 ---
