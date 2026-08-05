@@ -1,14 +1,39 @@
 # Antigravity Agentic Triad
 
-An evidence-backed agentic orchestration workflow for **Google Antigravity**, grounded in peer-reviewed AI Agent literature (**MetaGPT**, Hong et al., ICLR 2024; **Reflexion**, Shinn et al., 2023).
+An evidence-backed agentic orchestration workflow for **Google Antigravity**, featuring **Dynamic Model Switching & Escalation** at runtime. Grounded in peer-reviewed AI Agent literature (**MetaGPT**, Hong et al., ICLR 2024; **Reflexion**, Shinn et al., 2023).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Google Antigravity](https://img.shields.io/badge/Platform-Google%20Antigravity-blue.svg)](https://antigravity.google)
+[![Dynamic Model Switching](https://img.shields.io/badge/Runtime-Dynamic%20Model%20Escalation-blueviolet.svg)](references/dynamic-model-switching.md)
 [![Research Grounded](https://img.shields.io/badge/Research-ICLR%202024%20%7C%20Reflexion-green.svg)](references/research-foundation.md)
 
 When an AI coding assistant writes code and tests its own work within the same conversation context, it almost always self-approves. It misses subtle edge cases because its assumptions bleed into its verification. 
 
-**Antigravity Agentic Triad** solves this by strictly separating responsibilities into three distinct roles: **Architect**, **Worker**, and **Fresh Independent Reviewer**.
+**Antigravity Agentic Triad** solves this by strictly separating responsibilities into three distinct roles: **Architect**, **Worker (with Dynamic Model Escalation)**, and **Fresh Independent Reviewer**.
+
+---
+
+## ⚡ Dynamic Model Switching Mechanics
+
+Antigravity allows dynamic runtime selection of LLM model tiers via `invoke_subagent`:
+
+```mermaid
+flowchart TD
+    Architect[1. Architect Session\nMain Agent - Directs Flow] -->|Task Decomposition| Router{Dynamic Model Switcher}
+    
+    Router -->|Routine Edits: Model: flash| RoutineWorker[2a. Routine Worker\nGemini 3.6 Flash]
+    Router -->|Complex Logic: Model: pro| ComplexWorker[2b. Complex Worker\nGemini Pro]
+    Router -->|Retry Escalation: Model: pro| EscalatedWorker[2c. Escalated Worker\nGemini Pro - Auto Escalated]
+    
+    RoutineWorker -->|Implementation| Reviewer[3. Independent Reviewer\nModel: pro - Clean Context]
+    ComplexWorker -->|Implementation| Reviewer
+    EscalatedWorker -->|Implementation| Reviewer
+    
+    Reviewer -->|Audit Gate| Verdict{Verdict: ship / fix-first / rethink}
+    
+    Verdict -->|fix-first (Attempt 1 Flash)| EscalatedWorker
+    Verdict -->|ship| Complete[4. Complete]
+```
 
 ---
 
@@ -19,43 +44,19 @@ This workflow is mathematically and empirically grounded in recent AI multi-agen
 1. **MetaGPT (Hong et al., ICLR 2024)**: Demonstrates that replacing raw chat with **Standardized Operating Procedures (SOPs)** and **structured document handovers** eliminates cascading hallucinations and boosts code pass rates to over 87%.
 2. **Reflexion (Shinn et al., 2023)**: Proves that **verbal self-reflection** combined with **Actor-Evaluator memory isolation** enables language agents to learn rapidly from trial and error without model finetuning (reaching 91% on HumanEval).
 
-For detailed scientific proofs and citations, read [`references/research-foundation.md`](references/research-foundation.md).
-
----
-
-## 🏗 Architecture & Flow
-
-```mermaid
-flowchart TD
-    User([Developer / User]) -->|Request Feature| Arch[1. Architect Session\nMetaGPT SOP Handoff]
-    Arch -->|Draft 5-Part Task Packet| Spec[Task Specification Packet]
-    
-    Spec -->|Routine Task: Flash| WorkerFlash[2. Routine Worker\nModel: flash]
-    Spec -->|Complex Task: Pro| WorkerPro[2. Complex Worker\nModel: pro]
-    
-    WorkerFlash -->|Implementation Done| Reviewer[3. Fresh Independent Reviewer\nModel: pro - Reflexion Clean Context]
-    WorkerPro -->|Implementation Done| Reviewer
-    
-    Reviewer -->|Check Scope & Test Adequacy| Gate{Audit Gate}
-    
-    Gate -->|ship| Done[4. Report Completion to User]
-    Gate -->|fix-first\nMax 3 retries| ArchFix[Verbal Reflection & Delegate Fix]
-    Gate -->|rethink\nMax 2 retries| ArchRethink[Redesign Architecture]
-    
-    ArchFix --> WorkerPro
-    ArchRethink --> Arch
-```
+For detailed scientific proofs and citations, read [`references/research-foundation.md`](references/research-foundation.md) and [`references/dynamic-model-switching.md`](references/dynamic-model-switching.md).
 
 ---
 
 ## ⚡ Role Breakdown
 
-| Role | Responsibility | Antigravity Engine Mapping | Scientific Basis |
+| Role | Responsibility | Antigravity Engine Mapping | Dynamic Escalation Trigger |
 |---|---|---|---|
-| **Architect** | Primary chat session. Owns requirements, architecture, 5-part task packets, and final acceptance. | Primary Session Agent | MetaGPT (Hong et al., ICLR 2024) |
-| **Routine Worker** | Handles repetitive, well-defined, mechanical tasks. | `invoke_subagent` (`Model: flash`) | Role Specialization |
-| **Complex Worker** | Handles logic-heavy, complex tasks, security-sensitive work, or broad refactors. | `invoke_subagent` (`Model: pro`) | Role Specialization |
-| **Independent Reviewer** | Spawns in a **fresh subagent session** without previous conversation memory. Audits file scope bounds and test adequacy. | `invoke_subagent` (`Model: pro` in fresh subagent) | Reflexion (Shinn et al., 2023) |
+| **Architect** | Primary chat session. Owns requirements, architecture, 5-part task packets, and final acceptance. | Primary Session Agent | N/A |
+| **Routine Worker** | Handles repetitive, well-defined, mechanical tasks. | `invoke_subagent` (`Model: flash`) | Attempt 1 |
+| **Complex Worker** | Handles logic-heavy, complex tasks, security-sensitive work, or broad refactors. | `invoke_subagent` (`Model: pro`) | Attempt 1 |
+| **Escalated Worker** | Re-executes failed tasks with enhanced reasoning capability. | `invoke_subagent` (`Model: pro`) | Attempt 2 (if `flash` receives `fix-first`) |
+| **Independent Reviewer** | Spawns in a **fresh subagent session** without previous conversation memory. Audits file scope bounds and test adequacy. | `invoke_subagent` (`Model: pro` in fresh subagent) | All Attempts |
 
 ---
 
@@ -77,9 +78,11 @@ antigravity-agentic-triad/
 ├── README.md                    # Repository documentation
 ├── LICENSE                      # MIT License
 ├── scripts/                     # Tooling & validation scripts
+│   ├── model_switch_matrix.py   # Cost & speed matrix benchmark tool
 │   ├── validate_skill.py        # Schema, link & guardrail validator
 │   └── run_verification.py      # Workflow simulation & gate tester
 ├── references/                  # Reference guides
+│   ├── dynamic-model-switching.md# Dynamic model switching mechanics & triggers
 │   ├── research-foundation.md   # Peer-reviewed literature & paper citations
 │   ├── architect-guide.md       # Architect guidelines & SOP packet drafting
 │   ├── role-contracts.md        # Worker & Reviewer contracts
@@ -111,19 +114,14 @@ In your Antigravity chat, trigger the workflow by requesting:
 
 > *"Use the Antigravity Agentic Triad workflow to build feature X."*
 
-The assistant will:
-1. Formulate a 5-part task packet (Goal, Files/Ownership, Interfaces, Constraints, Verification).
-2. Dispatch implementation to a subagent (`flash` or `pro`).
-3. Spawn a clean Independent Reviewer subagent (`pro`).
-4. Complete only when the Reviewer returns a verified `ship` verdict.
-
 ---
 
-## 🧪 Validation & Testing
+## 🧪 Validation & Benchmarking
 
-Run the included validator and simulator scripts:
+Run the included validator, cost matrix estimator, and simulator scripts:
 
 ```bash
+python scripts/model_switch_matrix.py
 python scripts/validate_skill.py .
 python scripts/run_verification.py
 ```

@@ -54,6 +54,7 @@ def validate_skill(skill_dir: Path) -> bool:
 
     # 4. Check Key Reference Files
     expected_files = [
+        "references/dynamic-model-switching.md",
         "references/research-foundation.md",
         "references/architect-guide.md",
         "references/role-contracts.md",
