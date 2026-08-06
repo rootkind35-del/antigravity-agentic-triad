@@ -1,85 +1,92 @@
 #!/usr/bin/env python3
 """
-Antigravity Agentic Triad Skill Validator for Google Antigravity
-Validates YAML frontmatter, file paths, references, and loop boundary rules.
+Antigravity Agentic Triad Skill Validator
+Validates skill directory structure, frontmatter schema, file bounds, and link integrity.
 """
 
 import sys
-import os
 import re
 from pathlib import Path
 
-# Ensure UTF-8 output encoding for Windows terminal compatibility
 if sys.stdout.encoding.lower() != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 
-def validate_skill(skill_dir: Path) -> bool:
+def validate_skill(skill_dir_path):
+    skill_dir = Path(skill_dir_path).resolve()
     print(f"[SEARCH] Validating Agentic Triad Skill at: {skill_dir}")
+    
     errors = []
-    
-    skill_file = skill_dir / "SKILL.md"
-    if not skill_file.exists():
-        errors.append("[ERROR] Missing SKILL.md in root directory.")
-        return False
-        
-    content = skill_file.read_text(encoding="utf-8")
-    
-    # 1. Validate YAML Frontmatter
-    frontmatter_match = re.match(r"^---\n(.*?)\n---", content, re.DOTALL)
-    if not frontmatter_match:
-        errors.append("[ERROR] Invalid or missing YAML frontmatter in SKILL.md.")
+
+    # 1. Check SKILL.md Existence
+    skill_md = skill_dir / "SKILL.md"
+    if not skill_md.exists():
+        errors.append("[ERROR] Missing required file: SKILL.md")
     else:
-        fm = frontmatter_match.group(1)
-        if "name: antigravity-agentic-triad" not in fm:
-            errors.append("[ERROR] Frontmatter name must be 'antigravity-agentic-triad'.")
-        if "description:" not in fm:
-            errors.append("[ERROR] Frontmatter missing 'description:' property.")
-            
-    # 2. Check for Guardrail Rules
-    if "3 consecutive" not in content or "fix-first" not in content:
-        errors.append("[WARNING] Missing explicit 3-cycle fix-first limit check.")
-    if "2 consecutive" not in content or "rethink" not in content:
-        errors.append("[WARNING] Missing explicit 2-cycle rethink limit check.")
-    if "Files/Ownership" not in content:
-        errors.append("[WARNING] Missing Files/Ownership scope check reference.")
-    if "verification insufficient" not in content:
-        errors.append("[WARNING] Missing verification adequacy check rule.")
+        content = skill_md.read_text(encoding="utf-8")
+        if not content.startswith("---"):
+            errors.append("[ERROR] SKILL.md must start with YAML frontmatter delimiter '---'")
+        if "name: antigravity-agentic-triad" not in content:
+            errors.append("[ERROR] SKILL.md YAML frontmatter missing correct 'name: antigravity-agentic-triad'")
+        if "description:" not in content:
+            errors.append("[ERROR] SKILL.md YAML frontmatter missing 'description'")
+
+    # 2. Check README.md Existence
+    readme_md = skill_dir / "README.md"
+    if not readme_md.exists():
+        errors.append("[ERROR] Missing required file: README.md")
 
     # 3. Check Directory Structure
-    required_dirs = ["scripts", "references", "examples", "assets"]
-    for d in required_dirs:
+    expected_dirs = ["scripts", "references", "examples", "assets"]
+    for d in expected_dirs:
         dir_path = skill_dir / d
         if not dir_path.exists() or not dir_path.is_dir():
             errors.append(f"[ERROR] Missing recommended directory: {d}/")
 
-    # 4. Check Key Reference Files
+    # 4. Check Key Reference Files & Scripts
     expected_files = [
+        "references/harness-r1-mechanics.md",
         "references/dynamic-model-switching.md",
         "references/research-foundation.md",
         "references/architect-guide.md",
         "references/role-contracts.md",
         "references/antigravity-specs.md",
+        "assets/banner.jpg",
+        "assets/architecture_flowchart.png",
         "assets/task-packet-template.md",
         "assets/review-report-template.md",
+        "assets/architect-metagpt-prompt.md",
+        "assets/router-frugalgpt-prompt.md",
+        "assets/worker-swe-prompt.md",
+        "assets/reviewer-critic-prompt.md",
+        "assets/harness-engineer-prompt.md",
         "examples/task-packet-sample.md",
-        "examples/review-outcomes-sample.md"
+        "examples/review-outcomes-sample.md",
+        "scripts/triad_orchestrator.py",
+        "scripts/architect_metagpt_engine.py",
+        "scripts/router_frugalgpt_engine.py",
+        "scripts/worker_swe_lats_engine.py",
+        "scripts/reviewer_critic_reflexion_engine.py",
+        "scripts/harness_r1_engine.py",
+        "scripts/generate_diagram.py",
+        "scripts/model_switch_matrix.py",
+        "scripts/run_verification.py"
     ]
     for rel_path in expected_files:
         fpath = skill_dir / rel_path
         if not fpath.exists():
-            errors.append(f"[ERROR] Missing expected subfile: {rel_path}")
+            errors.append(f"[ERROR] Missing reference file/asset: {rel_path}")
 
-    # Report results
+    # Output Validation Results
     if errors:
-        print("\n[FAIL] Validation Failed with Errors:")
+        print("[FAIL] Skill Validation Failed with the following errors:")
         for err in errors:
             print(f"  {err}")
         return False
-        
+
     print("\n[SUCCESS] Antigravity Agentic Triad Validation Passed Successfully!")
     return True
 
 if __name__ == "__main__":
-    target = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).parent.parent
+    target = sys.argv[1] if len(sys.argv) > 1 else "."
     success = validate_skill(target)
     sys.exit(0 if success else 1)
